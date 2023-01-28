@@ -21,6 +21,7 @@ let cors = require("cors");
 const cleanUpandValidate = require("./utils/AuthUtil");
 
 const bcrypt = require("bcrypt");
+const isAuth = require("./middleware/authMiddleware");
 
 //defining port
 const PORT = process.env.PORT || 8000;
@@ -79,8 +80,10 @@ app.get("/login", (req, res) => {
   return res.render("login");
 });
 
-app.get("/profile", (req, res) => {
-    return res.send("This is my profile Page");
+app.get("/profile", isAuth, (req, res) => {
+  
+     return res.send("This is my profile Page");
+   
   });
 
 app.post("/register", async (req, res) => {
@@ -229,7 +232,7 @@ app.post("/login", async (req, res) => {
         }
 
         return res.status(200).redirect('/profile');
-        
+
       } else {
         return res.send({
           status: 400,
