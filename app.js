@@ -100,11 +100,7 @@ app.post("/register", async (req, res) => {
   try {
     const userDb = await user.save();
     console.log(userDb);
-    return res.send({
-      status: 200,
-      message: "Registraion - Success",
-      data: userDb,
-    });
+    return res.status(200).redirect("/login");
   } catch (err) {
     return res.send({
       status: 400,
@@ -142,6 +138,13 @@ app.post("/login", async (req, res) => {
       console.log("Line170");
       console.log(userDb);
 
+      if (!userDb) {
+        return res.send({
+          status: 401,
+          message: "User not found",
+        });
+      }
+
       let result = await bcrypt.compare(password, userDb.password);
       console.log("line 174");
       console.log(result);
@@ -166,9 +169,17 @@ app.post("/login", async (req, res) => {
       console.log("Line166");
       console.log(userDb);
 
+      if (!userDb) {
+        return res.send({
+          status: 401,
+          message: "User not found",
+        });
+      }
+
       let result = await bcrypt.compare(password, userDb.password);
       console.log("line 170");
       console.log(result);
+
       if (result) {
         return res.send({
           status: 200,
@@ -183,7 +194,6 @@ app.post("/login", async (req, res) => {
     } catch (err) {
       return res.send("Internal server error");
     }
-
   }
 
   res.send("Success");
