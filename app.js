@@ -88,6 +88,28 @@ let user = new UserSchema({
 
 })
 
+let userExists;
+
+try{
+   userExists = await UserSchema.findOne({email})
+}
+catch(error){
+    return res.send({
+        status:400,
+        message:"Internal Server error,please try after some time",
+        error:error
+    })
+
+}
+
+if(userExists)
+{
+    return res.send({
+        status:403,
+        message:"User already exists"
+    })
+}
+
 try{
   const userDb = await  user.save(); 
   console.log(userDb)
