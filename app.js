@@ -4,9 +4,14 @@ const validator = require("validator");
 
 const connectDB = require("./db/connect");
 const mongoose = require("mongoose");
+const session = require("express-session");
+
+const mongoDBsession = require('connect-mongodb-session') (session)
+
+
 mongoose.set("strictQuery", false);
 
-const session = require("express-session");
+
 //const MongoStore = require('connect-mongo')(session);
 
 const UserSchema = require("./Schemas/UserSchema");
@@ -24,14 +29,33 @@ const saltRounds = 9;
 // Set EJS as templating engine
 app.set("view engine", "ejs");
 
+const MongoURI = `mongodb+srv://lenson:Lenson27@cluster0.jfibqlk.mongodb.net/profile`;
 //middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+const store = new mongoDBsession({
+    uri: MongoURI,
+    collection: "sessions"
+})
+
+app.use(
+
+    session({
+        secret: 'This is Len',
+        resave:false,
+        saveUninitialized: false,
+        store: store
+    })
+
+)
+
+
+
 //app.use("/api", authRouter);
 
 //Connect to db
-const MongoURI = `mongodb+srv://lenson:Lenson27@cluster0.jfibqlk.mongodb.net/profile`;
+
 
 mongoose
   .connect(MongoURI, { useNewUrlParser: true })
@@ -54,6 +78,10 @@ app.get("/registration", (req, res) => {
 app.get("/login", (req, res) => {
   return res.render("login");
 });
+
+app.get("/profile", (req, res) => {
+    return res.send("This is my profile Page");
+  });
 
 app.post("/register", async (req, res) => {
   const { username, name, email, password } = req.body;
@@ -112,6 +140,10 @@ app.post("/register", async (req, res) => {
 
 app.post("/login", async (req, res) => {
   const { loginId, password } = req.body;
+//   console.log("line139")
+//   console.log(req.session)
+//   console.log("line140")
+//   console.log(req)
 
   if (!loginId || !password)
     return res.send({
@@ -145,14 +177,21 @@ app.post("/login", async (req, res) => {
         });
       }
 
+     
+
       let result = await bcrypt.compare(password, userDb.password);
-      console.log("line 174");
-      console.log(result);
+    //   console.log("line 174");
+    //   console.log(result);
       if (result) {
-        return res.send({
-          status: 200,
-          message: "Login Success",
-        });
+
+        req.session.isAuth= true;
+        req.session.user ={
+            username: userDb.username,
+            email:userDb.email,
+            userId:userDb._id
+        }
+
+        return res.status(200).redirect('/profile');
       } else {
         return res.send({
           status: 400,
@@ -181,10 +220,16 @@ app.post("/login", async (req, res) => {
       console.log(result);
 
       if (result) {
-        return res.send({
-          status: 200,
-          message: "Login Success",
-        });
+
+        req.session.isAuth= true;
+        req.session.user ={
+            username: userDb.username,
+            email:userDb.email,
+            userId:userDb._id
+        }
+
+        return res.status(200).redirect('/profile');
+        
       } else {
         return res.send({
           status: 400,
