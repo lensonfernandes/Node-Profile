@@ -9,10 +9,11 @@ mongoose.set('strictQuery', false);
 const session = require('express-session')
 //const MongoStore = require('connect-mongo')(session);
 
-const User = require('./Schemas/UserSchema')
+const UserSchema = require('./Schemas/UserSchema')
 
 const app = express()
-let cors = require('cors')
+let cors = require('cors');
+const cleanUpandValidate = require('./utils/AuthUtil');
 
 //defining port
 const PORT = process.env.PORT || 8000
@@ -49,10 +50,25 @@ app.get("/registration", (req, res)=>{
     return res.render("registration")
 })
 
-app.post("/register", (req, res)=>{
+app.post("/register", async (req, res)=>{
+
+const {username, name, email, password, phone} = req.body;
+try{
+ await cleanUpandValidate({name, username, password, email, phone})
+}
+catch(err){
+    return res.send({
+        status:402,
+        error:err,
+    })
+
+}
+
+
     res.send({
         status: 200,
-        message: req.body
+        message: "Registraion - Success",
+        data:req.body
 
     })
 })
