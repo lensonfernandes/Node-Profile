@@ -1,19 +1,18 @@
 
 const validator = require('validator')
 
-const cleanUpandValidate = ({name, email, password, phone, username}) => {
+const cleanUpandValidate = ({name, email, hashedPassword,  username}) => {
 
     return new Promise((resolve, reject)=>{
-        if(!email || !name || !password || !phone || !username)
+        if(!email || !name || !hashedPassword  || !username)
             reject("Missing credentials");
         if(typeof email !== 'string')
             reject("Email not a string");
         if(typeof name !== 'string')
             reject("Name not a string");
-        if(typeof password !== 'string')
+        if(typeof hashedPassword !== 'string')
             reject("Password not a string");
-        if(typeof phone !== 'string')
-            reject("Phone not a string");
+     
         if(typeof username !== 'string')
             reject("Username not a string");
 
@@ -23,7 +22,7 @@ const cleanUpandValidate = ({name, email, password, phone, username}) => {
         if(username.length <3 || username.length>25)
             reject("Username should be between 3 to 25 characters");
 
-        if(password.length <3 || password.length >75)
+        if(hashedPassword.length <3 || hashedPassword.length >75)
             reject("Password should be between 3 to 75 characters");
         
         resolve();

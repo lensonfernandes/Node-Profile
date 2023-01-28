@@ -15,8 +15,13 @@ const app = express()
 let cors = require('cors');
 const cleanUpandValidate = require('./utils/AuthUtil');
 
+const bcrypt = require('bcrypt');
+
+
 //defining port
 const PORT = process.env.PORT || 8000
+const saltRounds = 9;
+
 // Set EJS as templating engine
 app.set('view engine', 'ejs');
 
@@ -52,9 +57,15 @@ app.get("/registration", (req, res)=>{
 
 app.post("/register", async (req, res)=>{
 
-const {username, name, email, password, phone} = req.body;
+const {username, name, email, password} = req.body;
+
+
+const hashedPassword =  await bcrypt.hash(password, saltRounds)
+console.log(hashedPassword)
+
+
 try{
- await cleanUpandValidate({name, username, password, email, phone})
+ await cleanUpandValidate({name, username, hashedPassword, email})
 }
 catch(err){
     return res.send({
@@ -65,11 +76,14 @@ catch(err){
 }
 
 
+
+
+
 let user = new UserSchema({
     name: name,
     email: email,
-    password:password,
-    phone:phone,
+    password:hashedPassword,
+   
     username:username,
 
 })
