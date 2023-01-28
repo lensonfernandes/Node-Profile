@@ -65,12 +65,42 @@ catch(err){
 }
 
 
-    res.send({
+let user = new UserSchema({
+    name: name,
+    email: email,
+    password:password,
+    phone:phone,
+    username:username,
+
+})
+
+try{
+  const userDb = await  user.save(); 
+  console.log(userDb)
+  return  res.send({
         status: 200,
         message: "Registraion - Success",
-        data:req.body
+        data:userDb
 
     })
+}
+catch(err)
+{
+    return res.send({
+        status: 400,
+        message: "Registraion - Failed",
+        error:err
+
+    })
+
+}
+
+
+   
+})
+
+app.post("/login", (req, res)=>{
+    res.render("login")
 })
 
 //listening to the port
