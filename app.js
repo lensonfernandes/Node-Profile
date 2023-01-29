@@ -138,7 +138,15 @@ app.post("/register", async (req, res) => {
     const userDb = await user.save();
     sendVerificationEmail(email, verificationToken)
    // console.log(userDb);
-    return res.status(200).redirect("/login");
+    return res.send({
+      status: 200,
+      message:"Verification email sent to your email ID. Please verify before login",
+      data:{
+        _id: userDb._id,
+        username: userDb.username,
+        email: userDb.email
+      }
+    });
   } catch (err) {
     console.log(err)
     return res.send({
@@ -148,6 +156,36 @@ app.post("/register", async (req, res) => {
     });
   }
 });
+
+app.get('/verify/:id', (req,res)=>{
+  const token = req.params.id;
+ // console.log(token);
+
+  jwt.verify(token, "This is Len", async (err, verifiedJwt)=>{
+    if(err) throw err;
+
+    const userDb = await UserSchema.findOneAndUpdate(
+      {email: verifiedJwt.email},
+      {emailAuthenticated: true}
+    )
+
+    if(userDb)
+    {
+      return res.status(200).redirect("/login")
+    }
+    else
+    {
+      return res.send({
+        status: 400,
+        message: "Link is invalid"
+      })
+    }
+
+    //console.log(verifiedJwt)
+  })
+
+  //return res.send(true)
+})
 
 app.post("/login", async (req, res) => {
   const { loginId, password } = req.body;
@@ -188,6 +226,13 @@ app.post("/login", async (req, res) => {
         });
       }
 
+      if(userDb && !userDb.emailAuthenticated){
+        return res.send({
+          status: 402,
+          message:"Please verify email before login"
+        })
+      }
+
       let result = await bcrypt.compare(password, userDb.password);
       //   console.log("line 174");
       //   console.log(result);
@@ -223,6 +268,13 @@ app.post("/login", async (req, res) => {
         });
       }
 
+      if(userDb && !userDb.emailAuthenticated){
+        return res.send({
+          status: 402,
+          message:"Please verify email before login"
+        })
+      }
+      
       let result = await bcrypt.compare(password, userDb.password);
       console.log("line 170");
       console.log(result);
@@ -331,6 +383,5 @@ catch(err){
 })
 
 //listening to the port
-app.listen(PORT, () => {
-  console.log("Server is running");
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
