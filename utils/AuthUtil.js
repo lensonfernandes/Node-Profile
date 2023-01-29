@@ -1,5 +1,7 @@
 
 const validator = require('validator')
+const jwt = require('jsonwebtoken')
+const nodemailer = require("nodemailer")
 
 const cleanUpandValidate = ({name, email, hashedPassword,  username}) => {
 
@@ -34,4 +36,37 @@ const cleanUpandValidate = ({name, email, hashedPassword,  username}) => {
 
 }
 
-module.exports = cleanUpandValidate;
+const generateToken = (email) =>{
+  const JWT_TOKEN =   jwt.sign({email:email}, "This is Len", {expiresIn:"7d"})
+  return JWT_TOKEN
+}
+
+const sendVerificationEmail = (email, verificationToken) => {
+
+    console.log(email, verificationToken);
+    let mailer = nodemailer.createTransport({
+        host:"smtp:gmail.com",
+        port:465,
+        secure:true,
+        service:"Gmail",
+        auth:{
+            user:"gowhiteferns@gmail.com",
+            pass:"lhcvphdghhdwhvww"
+        }
+    })
+
+    let mailOptions ={
+        from:"My Profile",
+        to: email,
+        subject: "Email verification",
+        html:`Click <a href="http://localhost:8000/verify/${verificationToken}">Here </a>`
+    }
+
+
+    mailer.sendMail(mailOptions, function(err, response){
+        if(err) throw err;
+        else console.log("Mail sent")
+    })
+}
+
+module.exports = {cleanUpandValidate, generateToken, sendVerificationEmail};

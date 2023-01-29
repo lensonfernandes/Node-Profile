@@ -5,6 +5,7 @@ const validator = require("validator");
 const connectDB = require("./db/connect");
 const mongoose = require("mongoose");
 const session = require("express-session");
+const jwt = require("jsonwebtoken")
 
 const mongoDBsession = require("connect-mongodb-session")(session);
 
@@ -13,10 +14,11 @@ mongoose.set("strictQuery", false);
 //const MongoStore = require('connect-mongo')(session);
 
 const UserSchema = require("./Schemas/UserSchema");
+const profileSchema = require("./models/ProfileModel")
 
 const app = express();
 let cors = require("cors");
-const cleanUpandValidate = require("./utils/AuthUtil");
+const {cleanUpandValidate, generateToken, sendVerificationEmail} = require("./utils/AuthUtil");
 
 const bcrypt = require("bcrypt");
 const isAuth = require("./middleware/authMiddleware");
@@ -89,11 +91,12 @@ app.post("/register", async (req, res) => {
   const { username, name, email, password } = req.body;
 
   const hashedPassword = await bcrypt.hash(password, saltRounds);
-  console.log(hashedPassword);
+  // console.log(hashedPassword);
 
   try {
     await cleanUpandValidate({ name, username, hashedPassword, email });
   } catch (err) {
+    console.log(err)
     return res.send({
       status: 402,
       error: err,
@@ -127,11 +130,17 @@ app.post("/register", async (req, res) => {
     });
   }
 
+  //generate a token
+  const verificationToken = generateToken(email)
+  //console.log(verificationToken)
+
   try {
     const userDb = await user.save();
-    console.log(userDb);
+    sendVerificationEmail(email, verificationToken)
+   // console.log(userDb);
     return res.status(200).redirect("/login");
   } catch (err) {
+    console.log(err)
     return res.send({
       status: 400,
       message: "Registraion - Failed",
@@ -169,8 +178,8 @@ app.post("/login", async (req, res) => {
     let email = loginId;
     try {
       let userDb = await UserSchema.findOne({ email });
-      console.log("Line170");
-      console.log(userDb);
+      // console.log("Line170");
+      // console.log(userDb);
 
       if (!userDb) {
         return res.send({
@@ -204,8 +213,8 @@ app.post("/login", async (req, res) => {
     let username = loginId;
     try {
       let userDb = await UserSchema.findOne({ username });
-      console.log("Line166");
-      console.log(userDb);
+      // console.log("Line166");
+      // console.log(userDb);
 
       if (!userDb) {
         return res.send({
@@ -240,6 +249,86 @@ app.post("/login", async (req, res) => {
 
   res.send("Success");
 });
+
+app.post("/fetch", isAuth, async (req, res)=>{
+ // console.log(req.body)
+
+let profile = new profileSchema({
+  username: req.session.user.username,
+  email: req.session.user.email
+})
+
+let userDb = await UserSchema.findOne({email:req.session.user.email});
+
+profile.name = userDb.name;
+
+
+try{
+  let profileDb = await profile.save();
+  return res.send({
+    status: 201,
+    message:"Profile saved",
+    data:profileDb ,
+    
+  })
+}
+catch(err){
+  return res.send({
+    status: 500,
+    message:"Database error",
+    error: err
+  })
+}
+
+})
+
+app.post("/save", isAuth, async (req, res)=>{
+  console.log(req.body);
+
+  const name = req.body.name;
+  const username = req.body.username;
+  const email = req.body.email;
+  const phone = req.body.phone;
+  const password = req.body.password;
+  const college = req.body.college;
+  const state = req.body.state;
+  const country = req.body.country;
+  let profile = new profileSchema({
+    username: req.session.user.username,
+    email: req.session.user.email,
+    phone: phone,
+    name:name,
+    password: password,
+    college: college,
+    country: country,
+    state: state
+
+  })
+  
+//console.log(name, username, email, phone, password, college, state, country)
+let userDb = await UserSchema.findOne({email:req.session.user.email});
+
+profile.name = userDb.name;
+
+
+try{
+  let profileDb = await profile.save();
+  return res.send({
+    status: 201,
+    message:"Profile saved",
+    data:profileDb ,
+    
+  })
+}
+catch(err){
+  return res.send({
+    status: 500,
+    message:"Database error",
+    error: err
+  })
+}
+
+})
 
 //listening to the port
 app.listen(PORT, () => {

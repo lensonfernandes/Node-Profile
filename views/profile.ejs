@@ -7,34 +7,51 @@
       <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
     </head>
     <body>
+      <header class="pt-4" style="background-color:#FF8D76; height:20vh; color: white; text-align: center;"> Edit Profile</header>
+      
       <div class="container">
-        <h1 class="display-4 text-center py-1">To-Do App</h1>
-        
+        <!-- <h1 class="display-4 text-center py-1">Edit Profile</h1> -->
+        <img src="avatar.png" width="40px"  alt="Image loads here"/>  
         <div class="jumbotron p-3 shadow-sm">
-          <form id="create_form" >
-            <div class="d-flex align-items-center">
-              <input id="create_field" name='todo' autofocus autocomplete="off" class="form-control mr-3" type="text" style="flex: 1;">
-              <button class="add_item btn btn-primary">Add New Item</button>
+          <form id="fetch" action="/fetch" method="POST">
+            <button type="submit"> Fetch</button>
+          </form>
+          <form id="form" action="/save" method="POST">
+            <div class="">
+              <label for="name">Name</label>
+              <input id="name" name='name' autofocus autocomplete="off" class="form-control mr-3" type="text" style="flex: 1;">
+
+              <label for="username">Username</label>
+              <input id="username" name='username' autofocus autocomplete="off" class="form-control mr-3" type="text" style="flex: 1;">
+
+              <label for="email">Email</label>
+              <input id="email" name='email' autofocus autocomplete="off" class="form-control mr-3" type="text" style="flex: 1;">
+             
+              <label for="phone">Phone</label>
+              <input id="phone" name='phone' autofocus autocomplete="off" class="form-control mr-3" type="text" style="flex: 1;">
+
+              <label for="password">Password</label>
+              <input id="password" name='password' autofocus autocomplete="off" class="form-control mr-3" type="text" style="flex: 1;">
+
+              <label for="college">College Name</label>
+              <input id="college" name='college' autofocus autocomplete="off" class="form-control mr-3" type="text" style="flex: 1;">
+
+              <label for="state">State</label>
+              <input id="state" name='state' autofocus autocomplete="off" class="form-control mr-3" type="text" style="flex: 1;">
+
+              <label for="country">Country</label>
+              <input id="country" name='country' autofocus autocomplete="off" class="form-control mr-3" type="text" style="flex: 1;">
+              <button type="submit">Save</button>
             </div>
           </form>
         </div>
       
-        <ul id="item_list" class=""list-group pb-5>
-
-        </ul>
-      
-        <button class="show_more">
-          Show More
-        </button>
-        <br/>
-        <br/>
+        
       <form action='/logout' method="POST">
-        <button> Logout <button>
+        <button class="btn btn-dark"> Logout <button>
       </form>
 
-      <form action='/logout_from_all_devices' method="POST">
-        <button> Logout from all devices <button>
-      </form>
+     
 
       </div>
 
